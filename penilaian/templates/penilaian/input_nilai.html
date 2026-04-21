@@ -1,0 +1,90 @@
+{% extends 'penilaian/base.html' %}
+{% block title %}Input Nilai Ekskul{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    
+    <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        
+        <div class="bg-primary px-8 py-6 text-white flex justify-between items-center">
+            <div>
+                <h2 class="text-2xl font-bold">Formulir Penilaian</h2>
+                <p class="text-green-100 text-sm mt-1">
+                    {% if nilai %}Edit Nilai{% else %}Input Nilai Baru{% endif %}
+                </p>
+            </div>
+            <div class="text-right">
+                <div class="text-sm font-bold opacity-80">Siswa</div>
+                <div class="text-xl font-bold">{{ siswa.nama_siswa }}</div>
+                <div class="text-xs opacity-70">{{ siswa.kelas.nama_kelas }}</div>
+            </div>
+        </div>
+
+        <div class="p-8">
+            <form method="POST" class="space-y-6">
+                {% csrf_token %}
+                
+                <input type="hidden" name="siswa" value="{{ siswa.id }}">
+                <input type="hidden" name="semester" value="{{ semester_aktif.id }}"> <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Semester Aktif</label>
+                            <input type="text" class="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-500 font-bold" value="{{ semester_aktif.nama_semester }}" readonly>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Ekstrakurikuler <span class="text-red-500">*</span></label>
+                            <select id="eskul" name="eskul" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-accent focus:ring focus:ring-accent/20 transition bg-white cursor-pointer" required>
+                                {% for eskul in semua_eskul_coach %}
+                                    <option value="{{ eskul.id }}" {% if nilai.eskul == eskul %}selected{% endif %}>
+                                        {{ eskul.nama_eskul }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="kehadiran" class="block text-sm font-bold text-gray-700 mb-1">Jumlah Kehadiran <span class="text-red-500">*</span></label>
+                            <input type="number" id="kehadiran" name="kehadiran" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-accent focus:ring focus:ring-accent/20 transition" min="0" value="{{ nilai.nilai_kehadiran|default:0 }}" required>
+                        </div>
+
+                        <div>
+                            <label for="keaktifan" class="block text-sm font-bold text-gray-700 mb-1">Predikat Keaktifan <span class="text-red-500">*</span></label>
+                            <select id="keaktifan" name="keaktifan" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-accent focus:ring focus:ring-accent/20 transition bg-white cursor-pointer" required>
+                                <option value="A" {% if nilai.nilai_keaktifan == 'A' %}selected{% endif %}>A - Sangat Baik</option>
+                                <option value="B" {% if nilai.nilai_keaktifan == 'B' %}selected{% endif %}>B - Baik</option>
+                                <option value="C" {% if nilai.nilai_keaktifan == 'C' or not nilai %}selected{% endif %}>C - Cukup</option>
+                                <option value="D" {% if nilai.nilai_keaktifan == 'D' %}selected{% endif %}>D - Kurang</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div>
+                            <label for="kepersertaan_lomba" class="block text-sm font-bold text-gray-700 mb-1">Catatan Kepersertaan Lomba</label>
+                            <textarea id="kepersertaan_lomba" name="kepersertaan_lomba" rows="3" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-accent focus:ring focus:ring-accent/20 transition" placeholder="Contoh: Juara 1 Lomba Kota...">{{ nilai.kepersertaan_lomba|default:"" }}</textarea>
+                        </div>
+
+                        <div>
+                            <label for="catatan" class="block text-sm font-bold text-gray-700 mb-1">Catatan Pelatih (Opsional)</label>
+                            <textarea id="catatan" name="catatan" rows="3" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-accent focus:ring focus:ring-accent/20 transition" placeholder="Catatan perkembangan siswa...">{{ nilai.catatan_pelatih|default:"" }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-6 border-t border-gray-100 flex justify-end gap-4">
+                    <a href="{% url 'pelatih_dashboard' %}" class="px-6 py-3 bg-white border border-gray-300 text-gray-700 font-bold rounded-lg hover:bg-gray-50 transition shadow-sm">
+                        Batal
+                    </a>
+                    <button type="submit" class="px-8 py-3 bg-accent hover:bg-accent_hover text-white font-bold rounded-lg shadow-md transition transform hover:-translate-y-0.5 flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        Simpan Penilaian
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

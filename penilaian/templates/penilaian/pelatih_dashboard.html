@@ -1,0 +1,129 @@
+{% extends 'penilaian/base.html' %}
+{% block title %}Dashboard Pelatih{% endblock %}
+
+{% block content %}
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-primary">Dashboard Pelatih</h1>
+        <p class="text-gray-600 mt-1">Selamat datang, <strong>{{ request.user.first_name|default:request.user.username }}</strong>.</p>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        <div class="px-8 py-6 border-b border-gray-100 bg-primary flex justify-between items-center">
+            <h3 class="text-xl font-bold text-white flex items-center">
+                <svg class="w-6 h-6 mr-2 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                Daftar Anggota Ekskul
+            </h3>
+            <span class="text-xs font-bold text-primary bg-white px-3 py-1 rounded-full border border-gray-200 shadow-sm">
+                Semester: {{ semester_ini.nama_semester }}
+            </span>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="text-xs font-bold tracking-wider text-gray-500 uppercase bg-gray-50 border-b border-gray-100">
+                        <th class="px-8 py-5">Nama Siswa</th>
+                        <th class="px-6 py-5">Kelas</th>
+                        <th class="px-6 py-5 text-center">Status Penilaian</th>
+                        <th class="px-6 py-5 text-right">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                    {% for siswa in semua_siswa_coach %}
+                    <tr class="hover:bg-secondary/30 transition duration-150">
+                        <td class="px-8 py-5">
+                            <span class="font-bold text-gray-800 text-lg">{{ siswa.nama_siswa }}</span>
+                            <div class="text-xs text-gray-500 mt-1">NIS: {{ siswa.nis }}</div>
+                        </td>
+                        <td class="px-6 py-5">
+                            <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-sm font-bold">{{ siswa.kelas.nama_kelas }}</span>
+                        </td>
+                        <td class="px-6 py-5 text-center">
+                            {% if siswa.id in siswa_sudah_dinilai %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200">
+                                    Sudah Dinilai
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-red-50 text-red-600 border border-red-100">
+                                    Belum Dinilai
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-5 text-right space-x-2">
+                            <button type="button" onclick="document.getElementById('detailSiswa{{ siswa.id }}').classList.remove('hidden')" class="inline-flex items-center px-3 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition text-sm font-bold">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                Detail
+                            </button>
+
+                            {% if siswa.id in siswa_sudah_dinilai %}
+                                <a href="{% url 'input_nilai_edit' siswa_id=siswa.id %}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-bold rounded-lg hover:bg-gray-50 hover:text-primary transition shadow-sm">
+                                    Edit
+                                </a>
+                            {% else %}
+                                <a href="{% url 'input_nilai_edit' siswa_id=siswa.id %}" class="inline-flex items-center px-4 py-2 bg-accent hover:bg-accent_hover text-white text-sm font-bold rounded-lg transition shadow-md transform hover:-translate-y-0.5">
+                                    Input
+                                </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="px-8 py-12 text-center text-gray-500">
+                            <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                            <p>Anda belum memiliki anggota ekskul. Silakan hubungi admin.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% for siswa in semua_siswa_coach %}
+    <div id="detailSiswa{{ siswa.id }}" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity backdrop-blur-sm" aria-hidden="true" onclick="document.getElementById('detailSiswa{{ siswa.id }}').classList.add('hidden')"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full border border-gray-200">
+                <div class="bg-primary px-6 py-4 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-white">Biodata Siswa</h3>
+                    <button type="button" class="text-white/70 hover:text-white" onclick="document.getElementById('detailSiswa{{ siswa.id }}').classList.add('hidden')">✕</button>
+                </div>
+                <div class="px-6 py-6 bg-white">
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-1">
+                            <label class="text-xs text-gray-500 uppercase font-bold tracking-wider">Nama Lengkap</label>
+                            <p class="text-lg font-bold text-gray-800">{{ siswa.nama_siswa }}</p>
+                            <p class="text-sm text-gray-500">NIS: {{ siswa.nis }} | Kelas: {{ siswa.kelas.nama_kelas }}</p>
+                        </div>
+
+                        <div class="pt-2 border-t border-gray-100">
+                            <label class="text-xs text-gray-500 uppercase font-bold tracking-wider block mb-1">Kontak Siswa (WA)</label>
+                            <div class="flex items-center justify-between bg-green-50 p-3 rounded-lg border border-green-100">
+                                <span class="font-mono text-green-800 font-bold">{{ siswa.nomor_wa_temp }}</span>
+                                {% if siswa.nomor_wa_temp != "-" %}
+                                    <a href="https://wa.me/{{ siswa.nomor_wa_temp|cut:'0'|add:'62' }}" target="_blank" class="text-white bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center shadow-sm">
+                                        Chat WA
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-gray-100">
+                            <div>
+                                <label class="text-xs text-gray-500 uppercase font-bold tracking-wider">No. HP Orang Tua</label>
+                                <p class="font-medium text-gray-800 mt-1">{{ siswa.no_hp_ortu_temp|default:"-" }}</p>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 uppercase font-bold tracking-wider">Alamat Domisili</label>
+                                <p class="font-medium text-gray-800 mt-1 text-sm leading-snug">{{ siswa.alamat_temp|default:"-" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+{% endblock %}

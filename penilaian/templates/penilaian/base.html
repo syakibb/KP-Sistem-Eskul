@@ -1,0 +1,133 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}E-Eskul SMKN 30{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1B4D3E', secondary: '#E8F5E9', accent: '#F57C00', accent_hover: '#E65100',
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'], }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style> body { font-family: 'Inter', sans-serif; } select { -webkit-appearance: none; -moz-appearance: none; appearance: none; } </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-secondary min-h-screen flex flex-col text-gray-800 font-sans">
+
+    <nav class="w-full z-50 transition-all duration-300 {% block navbar_class %}bg-primary shadow-lg sticky top-0{% endblock %}">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex-shrink-0 flex items-center">
+                    <img src="{% static 'penilaian/img/logo_smkn30.png' %}" alt="Logo" class="h-10 w-auto mr-3">
+                    <a href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'eskul_list' %}{% endif %}" class="text-xl font-bold text-white tracking-wide hover:text-gray-200 transition">
+                        E-Eskul <span class="text-accent">SMKN 30</span>
+                    </a>
+                </div>
+
+                <div class="hidden md:flex items-center space-x-4">
+                    <a href="{% url 'eskul_list' %}" class="text-green-100 hover:text-white text-sm font-semibold transition flex items-center border border-green-700 hover:border-green-500 bg-primary px-3 py-1.5 rounded-lg shadow-sm mr-4">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                        Halaman Depan
+                    </a>
+
+                    {% if user.is_authenticated %}
+                        <div class="hidden md:flex flex-col items-end mr-2">
+                            <span class="text-gray-200 text-sm font-semibold">{{ user.first_name|default:user.username }}</span>
+                            <span class="text-accent text-xs uppercase tracking-wide font-bold">
+                                {% if user.is_superuser %}
+                                    Administrator
+                                {% elif user.groups.first.name == 'Waka Kesiswaan' %}
+                                    Waka Kesiswaan
+                                {% elif user.groups.first.name == 'Operator Dapodik' %}
+                                    Operator
+                                {% elif user.groups.first.name == 'Wali Kelas' %}
+                                    Wali Kelas
+                                {% elif user.groups.first.name == 'Pelatih' %}
+                                    Pelatih
+                                {% else %}
+                                    Staff
+                                {% endif %}
+                            </span>
+                        </div>
+                        <a href="{% url 'logout' %}" class="px-5 py-2 rounded-full bg-red-600/90 text-white font-bold text-sm hover:bg-red-700 transition shadow-md border border-red-500">
+                            Logout
+                        </a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="px-5 py-2 rounded-full bg-accent text-white font-bold text-sm hover:bg-accent_hover transition shadow-md">Login</a>
+                    {% endif %}
+                </div>
+
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" class="text-white hover:text-accent focus:outline-none p-2">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+        
+        <div id="mobile-menu" class="hidden md:hidden bg-primary border-t border-white/10">
+            <div class="px-4 pt-2 pb-4 space-y-2 shadow-inner">
+                <a href="{% url 'eskul_list' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-200 hover:text-white hover:bg-white/10">Halaman Depan</a>
+                
+                {% if user.is_authenticated %}
+                    <div class="border-t border-white/10 my-2 pt-2">
+                        <div class="px-3 py-2">
+                            <p class="text-sm text-gray-400">Login sebagai:</p>
+                            <p class="text-white font-bold">{{ user.first_name|default:user.username }}</p>
+                        </div>
+                        <a href="{% url 'dashboard' %}" class="block px-3 py-2 rounded-md text-base font-medium text-accent hover:text-white hover:bg-white/10">Dashboard Saya</a>
+                        <a href="{% url 'logout' %}" class="block px-3 py-2 rounded-md text-base font-medium text-red-400 hover:text-white hover:bg-red-600">Logout</a>
+                    </div>
+                {% else %}
+                    <a href="{% url 'login' %}" class="block px-3 py-2 rounded-md text-base font-bold text-white bg-accent text-center mt-2">Login Staff</a>
+                {% endif %}
+            </div>
+        </div>
+
+    </nav>
+
+    <main class="flex-grow py-10 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="mb-6 p-4 rounded-xl flex items-start shadow-sm border-l-4 {% if message.tags == 'success' %}bg-green-50 text-green-800 border-green-500{% else %}bg-red-50 text-red-800 border-red-500{% endif %}">
+                        <div class="ml-3 font-medium text-sm">{{ message }}</div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <footer class="bg-primary py-8 text-center text-white/80 text-sm mt-auto border-t border-white/10">
+        <div class="container mx-auto px-4">
+            <p class="font-semibold">&copy; 2025 Tim KP Universitas Pamulang.</p>
+            <p class="text-xs mt-1 text-gray-400">Dikembangkan untuk <span class="text-accent">SMKN 30 Jakarta</span>.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const btn = document.getElementById('mobile-menu-btn');
+            const menu = document.getElementById('mobile-menu');
+            if(btn && menu) {
+                btn.addEventListener('click', function() {
+                    menu.classList.toggle('hidden');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

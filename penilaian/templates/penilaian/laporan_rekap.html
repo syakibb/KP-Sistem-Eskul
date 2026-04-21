@@ -1,0 +1,123 @@
+{% extends 'penilaian/base.html' %}
+{% block title %}Laporan Rekapitulasi{% endblock %}
+
+{% block content %}
+    <div class="flex flex-col md:flex-row justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold text-primary">Laporan Rekapitulasi Nilai</h1>
+        
+        {% if user.is_superuser or user.groups.first.name == 'Waka Kesiswaan' %}
+            <a href="{% url 'admin_dashboard' %}" class="mt-4 md:mt-0 inline-flex items-center px-5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 hover:text-primary transition shadow-sm">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Kembali ke Dashboard
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200 mb-8">
+        <div class="flex items-center mb-4 border-b border-gray-100 pb-2">
+            <div class="bg-primary/10 p-2 rounded-lg mr-3">
+                <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+            </div>
+            <h2 class="text-lg font-bold text-gray-800">Filter Data Laporan</h2>
+        </div>
+        
+        <form method="GET">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Pilih Semester</label>
+                    <div class="relative">
+                        <select name="semester_filter" onchange="this.form.submit()" class="w-full pl-4 pr-10 py-2.5 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block">
+                            <option value="">Semua Semester</option>
+                            {% for sem in semua_semester_list %}
+                                <option value="{{ sem.id }}" {% if sem.id|stringformat:"s" == selected_semester_id_str %}selected{% endif %}>{{ sem.nama_semester }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Pilih Kelas</label>
+                    <div class="relative">
+                        <select name="kelas_filter" onchange="this.form.submit()" class="w-full pl-4 pr-10 py-2.5 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block">
+                            <option value="">Semua Kelas</option>
+                            {% for kelas in semua_kelas_list %}
+                                <option value="{{ kelas.id }}" {% if kelas.id|stringformat:"s" == selected_kelas_id_str %}selected{% endif %}>{{ kelas.nama_kelas }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Pilih EKskul</label>
+                    <div class="relative">
+                        <select name="eskul_filter" onchange="this.form.submit()" class="w-full pl-4 pr-10 py-2.5 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block">
+                            <option value="">Semua Ekskul</option>
+                            {% for eskul in semua_eskul_list %}
+                                <option value="{{ eskul.id }}" {% if eskul.id|stringformat:"s" == selected_eskul_id_str %}selected{% endif %}>{{ eskul.nama_eskul }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <button type="submit" name="export" value="csv" class="w-full py-2.5 px-4 bg-accent hover:bg-accent_hover text-white font-bold rounded-lg transition shadow-md flex justify-center items-center transform active:scale-95">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Unduh CSV
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-primary text-white">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Kelas</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Nama Siswa</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Ekstrakurikuler</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Semester</th>
+                        <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider">Jml. Hadir</th>
+                        <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider">Keaktifan (Predikat)</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Lomba</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for nilai in daftar_penilaian %}
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">{{ nilai.siswa.kelas.nama_kelas }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ nilai.siswa.nama_siswa }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700"><span class="bg-green-100 text-green-800 px-2 py-1 rounded-md text-xs font-bold">{{ nilai.eskul.nama_eskul }}</span></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ nilai.semester.nama_semester }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-center font-medium">{{ nilai.nilai_kehadiran }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                             <span class="px-2 py-1 rounded-full text-xs font-bold 
+                                {% if nilai.nilai_keaktifan == 'A' %}bg-green-100 text-green-700
+                                {% elif nilai.nilai_keaktifan == 'B' %}bg-blue-100 text-blue-700
+                                {% else %}bg-yellow-100 text-yellow-700{% endif %}">
+                                {{ nilai.get_nilai_keaktifan_display }}
+                             </span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-600 italic">{{ nilai.kepersertaan_lomba|default_if_none:"-"|truncatechars:30 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-6 py-16 text-center text-gray-500 bg-gray-50">
+                            <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            <p class="text-lg font-medium">Tidak ada data yang ditemukan</p>
+                            <p class="text-sm mt-1">Coba ubah filter pencarian Anda</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

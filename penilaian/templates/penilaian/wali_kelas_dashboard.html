@@ -1,0 +1,172 @@
+{% extends 'penilaian/base.html' %}
+{% block title %}Dashboard Wali Kelas{% endblock %}
+
+{% block content %}
+    <div class="mb-8 flex flex-col md:flex-row justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold text-primary">Dashboard Wali Kelas</h1>
+            <p class="text-gray-600 mt-1">Selamat datang, <strong>{{ request.user.first_name|default:request.user.username }}</strong>.</p>
+        </div>
+        <div class="mt-4 md:mt-0">
+            <span class="inline-flex items-center px-4 py-2 rounded-full bg-white border border-primary text-primary font-bold shadow-sm">
+                Kelas: {{ kelas_perwalian.nama_kelas }}
+            </span>
+        </div>
+    </div>
+
+    <form method="GET" class="bg-white p-6 rounded-xl shadow-md border border-gray-200 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">Filter Semester</label>
+                <div class="relative">
+                    <select name="semester_filter" id="semester_filter" onchange="this.form.submit()" class="w-full pl-4 pr-10 py-2.5 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block">
+                        <option value="">Semua Semester</option> 
+                        
+                        {% for sem in semua_semester_list %}
+                            <option value="{{ sem.id }}" {% if sem == semester_terpilih %}selected{% endif %}>
+                                {{ sem.nama_semester }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">Filter Ekstrakurikuler</label>
+                <div class="relative">
+                    <select name="eskul_filter" id="eskul_filter" onchange="this.form.submit()" class="w-full pl-4 pr-10 py-2.5 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block">
+                        <option value="">Semua Ekskul</option>
+                        {% for eskul in semua_eskul_list %}
+                            <option value="{{ eskul.id }}" {% if eskul.id|stringformat:"s" == selected_eskul_id_str %}selected{% endif %}>{{ eskul.nama_eskul }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div>
+                <button type="submit" name="export" value="csv" class="w-full py-2.5 px-4 bg-accent hover:bg-accent_hover text-white font-bold rounded-lg transition shadow-md flex justify-center items-center">
+                    Unduh Laporan (CSV)
+                </button>
+            </div>
+        </div>
+    </form>
+    
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+            <h4 class="mb-0">Daftar Nilai Eskul Siswa (Semester: {{ semester_terpilih.nama_semester|default:"Semua Semester" }})</h4>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-primary text-white">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Nama Siswa</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Ekstrakurikuler</th>
+                        <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider">Jml. Hadir</th>
+                        <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider">Keaktifan (Predikat)</th>
+                        <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider">Detail & Catatan</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for nilai in daftar_penilaian %}
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-bold text-gray-900">{{ nilai.siswa.nama_siswa }}</div>
+                            <div class="text-xs text-gray-500">NIS: {{ nilai.siswa.nis }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded-md text-xs font-bold">{{ nilai.eskul.nama_eskul }}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-700 font-medium">{{ nilai.nilai_kehadiran }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                             <span class="px-2 py-1 rounded-full text-xs font-bold 
+                                {% if nilai.nilai_keaktifan == 'A' %}bg-green-100 text-green-700
+                                {% elif nilai.nilai_keaktifan == 'B' %}bg-blue-100 text-blue-700
+                                {% else %}bg-yellow-100 text-yellow-700{% endif %}">
+                                {{ nilai.get_nilai_keaktifan_display }}
+                             </span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <button type="button" onclick="document.getElementById('detailSiswa{{ nilai.id }}').classList.remove('hidden')" class="text-accent hover:text-white border border-accent hover:bg-accent focus:ring-4 focus:outline-none focus:ring-accent/30 font-medium rounded-lg text-xs px-3 py-2 text-center inline-flex items-center transition">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                Lihat Catatan & Biodata
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-10 text-center text-gray-500">Belum ada data penilaian untuk filter ini.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% for nilai in daftar_penilaian %}
+    <div id="detailSiswa{{ nilai.id }}" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity backdrop-blur-sm" aria-hidden="true" onclick="document.getElementById('detailSiswa{{ nilai.id }}').classList.add('hidden')"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full border border-gray-200">
+                <div class="bg-primary px-6 py-4 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-white">Detail Siswa</h3>
+                    <button type="button" class="text-white/70 hover:text-white" onclick="document.getElementById('detailSiswa{{ nilai.id }}').classList.add('hidden')">✕</button>
+                </div>
+                <div class="px-6 py-6 bg-white">
+                    <div class="space-y-4">
+                        <div class="flex items-center border-b border-gray-100 pb-4 mb-4">
+                            <div class="bg-gray-100 rounded-full h-12 w-12 flex items-center justify-center text-xl font-bold text-gray-500 mr-4">{{ nilai.siswa.nama_siswa|slice:":1" }}</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-gray-800">{{ nilai.siswa.nama_siswa }}</h4>
+                                <p class="text-sm text-gray-500">NIS: {{ nilai.siswa.nis }}</p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-xs text-gray-500 uppercase font-bold tracking-wider block mb-2">Kontak & Alamat</label>
+                            
+                            <div class="flex items-center justify-between bg-green-50 p-3 rounded-lg border border-green-100 mb-2">
+                                <div>
+                                    <span class="text-xs text-green-600 font-bold block">WhatsApp Siswa</span>
+                                    <span class="font-mono text-gray-800">{{ nilai.siswa.nomor_wa_temp }}</span>
+                                </div>
+                                {% if nilai.siswa.nomor_wa_temp != "-" %}
+                                    <a href="https://wa.me/{{ nilai.siswa.nomor_wa_temp|cut:'0'|add:'62' }}" target="_blank" class="text-white bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center shadow-sm">
+                                        Chat
+                                    </a>
+                                {% endif %}
+                            </div>
+
+                            <div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-200 mb-2">
+                                <div>
+                                    <span class="text-xs text-gray-500 font-bold block">No. HP Orang Tua</span>
+                                    <span class="font-mono text-gray-800">{{ nilai.siswa.no_hp_ortu_temp|default:"-" }}</span>
+                                </div>
+                            </div>
+
+                            <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                <span class="text-xs text-gray-500 font-bold block mb-1">Alamat Domisili</span>
+                                <p class="text-sm text-gray-700 leading-relaxed">{{ nilai.siswa.alamat_temp|default:"-" }}</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                            <div>
+                                <label class="text-xs text-gray-500 uppercase font-bold tracking-wider block mb-1">Catatan Pelatih</label>
+                                <div class="bg-yellow-50 p-3 rounded text-sm text-gray-700 h-full border border-yellow-100">{{ nilai.catatan_pelatih|default:"-"|linebreaks }}</div>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 uppercase font-bold tracking-wider block mb-1">Lomba</label>
+                                <div class="bg-blue-50 p-3 rounded text-sm text-gray-700 h-full border border-blue-100">{{ nilai.kepersertaan_lomba|default:"-"|linebreaks }}</div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-6 py-3 flex justify-end border-t border-gray-200">
+                    <button type="button" class="inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none transition" onclick="document.getElementById('detailSiswa{{ nilai.id }}').classList.add('hidden')">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+{% endblock %}

@@ -1,0 +1,22 @@
+from django.urls import path
+
+from . import views
+
+urlpatterns = [
+    # URL dari tahap sebelumnya
+    path('laporan/', views.laporan_rekap, name='laporan_rekap'),
+    path('input-nilai/<int:siswa_id>/', views.input_nilai, name='input_nilai_edit'),
+
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
+    path('profil-eskul/', views.eskul_list_view, name='eskul_list'),
+    path('profil-eskul/<int:eskul_id>/', views.eskul_detail_view, name='eskul_detail'),
+    path('daftar-eskul/', views.pendaftaran_siswa, name='pendaftaran_siswa'),
+    path('verifikasi/', views.verifikasi_list, name='verifikasi_list'),
+    path('verifikasi/<int:pendaftaran_id>/<str:aksi>/', views.verifikasi_aksi, name='verifikasi_aksi'),
+    path('dashboard/', views.dashboard_view, name='dashboard'),
+    path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('detail-eskul/<int:eskul_id>/', views.admin_detail_eskul, name='admin_detail_eskul'),
+    path('wali-kelas/', views.wali_kelas_dashboard, name='wali_kelas_dashboard'),
+    path('pelatih-dashboard/', views.pelatih_dashboard, name='pelatih_dashboard'),
+]
