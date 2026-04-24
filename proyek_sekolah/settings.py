@@ -8,9 +8,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-)%v=xtcdbd3y3%j!y%lv)uh&y8!&8g$i%vkaao6e#ic$8r0!74'
 
 # --- PENTING: Debug True dulu supaya kalau error kelihatan pesannya ---
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['ekskul.smknegeri30jkt.sch.id', 'www.ekskul.smknegeri30jkt.sch.id', 'localhost']
+ALLOWED_HOSTS = ['ekskul.smknegeri30jkt.sch.id', 'www.ekskul.smknegeri30jkt.sch.id', '127.0.0.1', 'localhost']
 
 # Application definition
 INSTALLED_APPS = [
@@ -58,8 +58,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'smkneger_ekskul',
-        'USER': 'smkneger_admin',
-        'PASSWORD': '63fpwee6p7',
+        'USER': 'root',
+        'PASSWORD': '',
         'HOST': 'localhost',
         'PORT': '3306',
     }
@@ -80,7 +80,7 @@ USE_I18N = True
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
