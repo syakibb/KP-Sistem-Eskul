@@ -211,8 +211,7 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    # Arahkan kembali ke halaman login setelah logout
-    return redirect('login')
+    return redirect('/')
 
 @login_required
 def pelatih_dashboard(request):
@@ -271,26 +270,30 @@ def pelatih_dashboard(request):
 def dashboard_view(request):
     user = request.user
 
-    # 1. Cek Superuser (Anda) atau Waka Kesiswaan (Pak Eko)
-    if user.is_superuser or user.groups.filter(name='Waka Kesiswaan').exists():
+    # 1. Cek Superuser (Admin Utama - Anda) -> Arahkan ke ruang mesin Django
+    if user.is_superuser:
+        return redirect('/admin/') 
+
+    # 2. Cek Waka Kesiswaan (Pak Eko) -> Arahkan ke dashboard penilaian
+    elif user.groups.filter(name='Waka Kesiswaan').exists():
         return redirect('admin_dashboard')
 
-    # 2. Cek Operator Dapodik
-    # Kita arahkan Operator Dapodik langsung ke halaman laporan
-    if user.groups.filter(name='Operator Dapodik').exists():
+    # 3. Cek Operator Dapodik -> Arahkan ke halaman rekap laporan
+    elif user.groups.filter(name='Operator Dapodik').exists():
         return redirect('laporan_rekap')
 
-    # 3. Cek Wali Kelas
-    if user.groups.filter(name='Wali Kelas').exists():
+    # 4. Cek Wali Kelas -> Arahkan ke dashboard wali kelas
+    elif user.groups.filter(name='Wali Kelas').exists():
         return redirect('wali_kelas_dashboard')
 
-    # 4. Cek Pelatih
-    if user.groups.filter(name='Pelatih').exists():
+    # 5. Cek Pelatih -> Arahkan ke dashboard pelatih
+    elif user.groups.filter(name='Pelatih').exists():
         return redirect('pelatih_dashboard')
 
-    # 5. Jika user login tapi tidak punya grup (default)
-    messages.error(request, 'Akun Anda belum memiliki peran. Harap hubungi Admin.')
-    return redirect('login')
+    # 6. Jika user login tapi tidak punya grup (default)
+    else:
+        messages.error(request, 'Akun Anda belum memiliki peran. Harap hubungi Admin.')
+        return redirect('login')
 
 @staff_member_required
 def admin_dashboard(request):

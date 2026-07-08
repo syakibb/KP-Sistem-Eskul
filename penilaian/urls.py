@@ -1,15 +1,16 @@
 from django.urls import path
-
 from . import views
 
 urlpatterns = [
-    # URL dari tahap sebelumnya
     path('laporan/', views.laporan_rekap, name='laporan_rekap'),
     path('input-nilai/<int:siswa_id>/', views.input_nilai, name='input_nilai_edit'),
 
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
-    path('profil-eskul/', views.eskul_list_view, name='eskul_list'),
+    
+    # UBAH BARIS INI: 'profil-eskul/' diubah menjadi ''
+    path('', views.eskul_list_view, name='eskul_list'),
+    
     path('profil-eskul/<int:eskul_id>/', views.eskul_detail_view, name='eskul_detail'),
     path('daftar-eskul/', views.pendaftaran_siswa, name='pendaftaran_siswa'),
     path('verifikasi/', views.verifikasi_list, name='verifikasi_list'),
