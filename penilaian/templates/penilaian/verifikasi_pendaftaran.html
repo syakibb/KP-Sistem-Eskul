@@ -4,10 +4,16 @@
 {% block content %}
     <div class="flex flex-col md:flex-row justify-between items-center mb-8">
         <div>
-            <h1 class="text-3xl font-bold text-primary">Verifikasi Pendaftaran</h1>
-            <p class="text-gray-600 mt-1">Daftar siswa baru yang mendaftar via online.</p>
+            <div class="flex items-center gap-3">
+                <h1 class="text-3xl font-bold text-primary">{{ judul_halaman }}</h1>
+                <span class="px-3 py-1 bg-secondary text-primary rounded-full text-xs font-bold uppercase tracking-wider border border-green-200">
+                    {% if is_waka %} Mode Waka {% else %} Mode Pelatih {% endif %}
+                </span>
+            </div>
+            <p class="text-gray-600 mt-2">Daftar siswa baru yang mendaftar via online.</p>
         </div>
-        <a href="{% url 'admin_dashboard' %}" class="mt-4 md:mt-0 inline-flex items-center px-5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 hover:text-primary transition shadow-sm">
+        
+        <a href="{% if is_waka %}{% url 'admin_dashboard' %}{% else %}{% url 'pelatih_dashboard' %}{% endif %}" class="mt-4 md:mt-0 inline-flex items-center px-5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 hover:text-primary transition shadow-sm">
             &laquo; Kembali ke Dashboard
         </a>
     </div>
@@ -35,7 +41,7 @@
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    {% for p in pendaftar_pending %}
+                    {% for p in pendaftaran_list %}
                     <tr class="hover:bg-gray-50 transition">
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ p.tanggal_daftar|date:"d M Y" }}</td>
                         <td class="px-6 py-4">

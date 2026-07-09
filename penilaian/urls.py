@@ -20,4 +20,9 @@ urlpatterns = [
     path('detail-eskul/<int:eskul_id>/', views.admin_detail_eskul, name='admin_detail_eskul'),
     path('wali-kelas/', views.wali_kelas_dashboard, name='wali_kelas_dashboard'),
     path('pelatih-dashboard/', views.pelatih_dashboard, name='pelatih_dashboard'),
+
+    # --- Rute Fitur Pengaturan Pelatih ---
+    path('pengaturan-eskul/', views.edit_profil_eskul, name='edit_profil_eskul'),
+    path('pengaturan-eskul/galeri/tambah/', views.tambah_foto_galeri, name='tambah_foto_galeri'),
+    path('pengaturan-eskul/galeri/hapus/<int:foto_id>/', views.hapus_foto_galeri, name='hapus_foto_galeri'),
 ]

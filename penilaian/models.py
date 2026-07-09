@@ -1,10 +1,12 @@
-from io import BytesIO
+import os
 
+from io import BytesIO
+from django.db.models.signals import pre_save, post_delete
+from django.dispatch import receiver
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
 from django.db import models
 from django.db.models.signals import post_save
-from django.dispatch import receiver
 from PIL import Image
 
 
@@ -209,3 +211,46 @@ class Pendaftaran(models.Model):
 
     def __str__(self):
         return f"{self.nama_siswa} - {self.eskul_tujuan.nama_eskul} ({self.status})"
+    
+# ==========================================
+# SIGNAL UNTUK MENGHAPUS FILE FOTO OTOMATIS
+# ==========================================
+
+# 1. Hapus foto sampul lama jika pelatih menggantinya dengan yang baru
+@receiver(pre_save, sender=Ekstrakurikuler)
+def hapus_foto_sampul_lama(sender, instance, **kwargs):
+    if not instance.pk:
+        return False
+    try:
+        eskul_lama = Ekstrakurikuler.objects.get(pk=instance.pk)
+        foto_lama = eskul_lama.foto_sampul
+    except Ekstrakurikuler.DoesNotExist:
+        return False
+
+    foto_baru = instance.foto_sampul
+    if foto_lama and foto_lama != foto_baru:
+        if os.path.isfile(foto_lama.path):
+            os.remove(foto_lama.path)
+
+# 2. Hapus file fisik jika objek FotoEskul (Galeri) dihapus
+@receiver(post_delete, sender=FotoEskul)
+def hapus_file_galeri_terhapus(sender, instance, **kwargs):
+    if instance.foto:
+        if os.path.isfile(instance.foto.path):
+            os.remove(instance.foto.path)
+
+# 3. Hapus file fisik Galeri lama jika pelatih merevisi/mengganti fotonya
+@receiver(pre_save, sender=FotoEskul)
+def hapus_file_galeri_lama(sender, instance, **kwargs):
+    if not instance.pk:
+        return False
+    try:
+        galeri_lama = FotoEskul.objects.get(pk=instance.pk)
+        foto_lama = galeri_lama.foto
+    except FotoEskul.DoesNotExist:
+        return False
+
+    foto_baru = instance.foto
+    if foto_lama and foto_lama != foto_baru:
+        if os.path.isfile(foto_lama.path):
+            os.remove(foto_lama.path)

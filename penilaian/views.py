@@ -11,9 +11,10 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from itertools import chain
 
-from .forms import FormPendaftaran, CustomLoginForm
+from .forms import FormPendaftaran, CustomLoginForm, FormProfilEskul, FormGaleriEskul
 from .models import (
     Ekstrakurikuler,
+    FotoEskul,  # <-- Tambahan baru
     Kelas,
     Pendaftaran,
     Penilaian,
@@ -231,6 +232,11 @@ def pelatih_dashboard(request):
     try:
         # Ambil eskul yang diampu oleh pelatih ini
         eskul_diampu = Ekstrakurikuler.objects.filter(pelatih=request.user)
+        # --- KODE BARU: Hitung jumlah pendaftar pending khusus pelatih ini ---
+        jumlah_pending = Pendaftaran.objects.filter(
+            eskul_tujuan__in=eskul_diampu, 
+            status='PENDING'
+        ).count()
         # Ambil semua siswa yang terdaftar di eskul tersebut
         semua_siswa = Siswa.objects.filter(eskul_yang_diikuti__in=eskul_diampu).distinct().order_by('nama_siswa')
 
@@ -263,6 +269,7 @@ def pelatih_dashboard(request):
         'semua_siswa_coach': semua_siswa,
         'siswa_sudah_dinilai': siswa_sudah_dinilai,
         'semester_ini': semester_ini, # Kirim objek semester, bukan string
+        'jumlah_pending': jumlah_pending,
     }
     return render(request, 'penilaian/pelatih_dashboard.html', context)
 
@@ -691,35 +698,53 @@ def pendaftaran_siswa(request):
 
     return render(request, 'penilaian/pendaftaran_eskul.html', {'form': form, 'success': success})
 
-# --- View untuk Menampilkan Daftar Pendaftar (Admin Only) ---
-@staff_member_required
+@login_required
 def verifikasi_list(request):
-    # --- PENGAMAN TAMBAHAN ---
-    if not (request.user.is_superuser or request.user.groups.filter(name='Waka Kesiswaan').exists()):
-        messages.error(request, "Hanya Waka Kesiswaan yang bisa melakukan verifikasi.")
-        return redirect('dashboard')
+    user = request.user
     
-    # Ambil semua pendaftaran yang statusnya masih PENDING
-    pendaftar_pending = Pendaftaran.objects.filter(status='PENDING').order_by('-tanggal_daftar')
+    # Cek peran masing-masing
+    is_waka = user.is_superuser or user.groups.filter(name='Waka Kesiswaan').exists()
+    is_pelatih = user.groups.filter(name='Pelatih').exists()
 
-    context = {
-        'pendaftar_pending': pendaftar_pending
-    }
-    return render(request, 'penilaian/verifikasi_pendaftaran.html', context)
-
-# --- View untuk Memproses Approve/Reject (Admin Only) ---
-@staff_member_required
-def verifikasi_aksi(request, pendaftaran_id, aksi):
-    # --- PENGAMAN TAMBAHAN ---
-    if not (request.user.is_superuser or request.user.groups.filter(name='Waka Kesiswaan').exists()):
+    # Jika bukan Waka dan bukan Pelatih, tendang keluar
+    if not (is_waka or is_pelatih):
+        messages.error(request, 'Anda tidak memiliki akses ke halaman verifikasi.')
         return redirect('dashboard')
 
-    # Ambil data pendaftaran
-    pendaftar = get_object_or_404(Pendaftaran, id=pendaftaran_id)
+    if is_waka:
+        # Waka Kesiswaan bisa melihat SEMUA pendaftaran siswa baru yang masih PENDING
+        pendaftaran_list = Pendaftaran.objects.filter(status='PENDING').order_by('-id')
+        judul_halaman = "Semua Pengajuan Pendaftaran Siswa"
+    elif is_pelatih:
+        # Pelatih HANYA bisa melihat pendaftaran yang eskul tujuannya diampu oleh dirinya
+        pendaftaran_list = Pendaftaran.objects.filter(eskul_tujuan__pelatih=user, status='PENDING').order_by('-id')
+        judul_halaman = "Pengajuan Pendaftaran Ekskul Anda"
 
+    return render(request, 'penilaian/verifikasi_pendaftaran.html', {
+        'pendaftaran_list': pendaftaran_list,
+        'is_waka': is_waka,
+        'is_pelatih': is_pelatih,
+        'judul_halaman': judul_halaman
+    })
+
+
+@login_required  # DIUBAH: Menggunakan login_required agar Pelatih bisa masuk
+def verifikasi_aksi(request, pendaftaran_id, aksi):
+    user = request.user
+    pendaftar = get_object_or_404(Pendaftaran, id=pendaftaran_id)
+    
+    is_waka = user.is_superuser or user.groups.filter(name='Waka Kesiswaan').exists()
+    # Pelatih sah jika dia berada di grup Pelatih DAN eskul yang didaftari siswa diampu oleh dirinya
+    is_pelatih_sah = user.groups.filter(name='Pelatih').exists() and pendaftar.eskul_tujuan.pelatih == user
+
+    # --- KEAMANAN KETAT ---
+    if not (is_waka or is_pelatih_sah):
+        messages.error(request, 'Anda tidak memiliki wewenang untuk memproses pendaftaran ini.')
+        return redirect('verifikasi_list')
+
+    # Proses ACC (Approve)
     if aksi == 'approve':
         try:
-            # 1. Cek apakah siswa dengan NIS ini sudah ada di database?
             siswa, created = Siswa.objects.get_or_create(
                 nis=pendaftar.nis,
                 defaults={
@@ -727,23 +752,85 @@ def verifikasi_aksi(request, pendaftaran_id, aksi):
                     'kelas': pendaftar.kelas
                 }
             )
-
-            # 2. Masukkan siswa ke eskul yang dituju
             siswa.eskul_yang_diikuti.add(pendaftar.eskul_tujuan)
-
-            # 3. Ubah status pendaftaran jadi APPROVED
             pendaftar.status = 'APPROVED'
             pendaftar.save()
-
-            messages.success(request, f"Siswa {pendaftar.nama_siswa} berhasil diterima di {pendaftar.eskul_tujuan.nama_eskul}.")
-
+            messages.success(request, f"Siswa {pendaftar.nama_siswa} berhasil diterima di eskul {pendaftar.eskul_tujuan.nama_eskul}.")
         except Exception as e:
             messages.error(request, f"Terjadi kesalahan saat memproses data: {e}")
 
+    # Proses Tolak (Reject)
     elif aksi == 'reject':
-        # Ubah status jadi REJECTED
         pendaftar.status = 'REJECTED'
         pendaftar.save()
-        messages.info(request, f"Pendaftaran {pendaftar.nama_siswa} telah ditolak.")
+        messages.warning(request, f"Pendaftaran {pendaftar.nama_siswa} telah ditolak.")
 
     return redirect('verifikasi_list')
+
+# ==========================================
+# FITUR PENGATURAN PROFIL & GALERI (PELATIH)
+# ==========================================
+
+@login_required
+def edit_profil_eskul(request):
+    # 1. Pastikan yang login punya eskul (Pelatih)
+    try:
+        eskul = Ekstrakurikuler.objects.get(pelatih=request.user)
+    except Ekstrakurikuler.DoesNotExist:
+        messages.error(request, 'Anda tidak terdaftar sebagai pelatih ekstrakurikuler manapun.')
+        return redirect('dashboard')
+
+    # 2. Proses jika form profil disubmit
+    if request.method == 'POST':
+        form = FormProfilEskul(request.POST, request.FILES, instance=eskul)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profil Ekstrakurikuler berhasil diperbarui!')
+            return redirect('edit_profil_eskul')
+    else:
+        # Tampilkan form dengan isi data yang sudah ada sebelumnya
+        form = FormProfilEskul(instance=eskul)
+
+    # 3. Ambil data galeri untuk ditampilkan di bagian bawah halaman
+    galeri_foto = FotoEskul.objects.filter(eskul=eskul)
+    form_galeri = FormGaleriEskul()
+
+    context = {
+        'eskul': eskul,
+        'form': form,
+        'galeri_foto': galeri_foto,
+        'form_galeri': form_galeri,
+    }
+    return render(request, 'penilaian/edit_profil_eskul.html', context)
+
+@login_required
+def tambah_foto_galeri(request):
+    if request.method == 'POST':
+        try:
+            eskul = Ekstrakurikuler.objects.get(pelatih=request.user)
+            form = FormGaleriEskul(request.POST, request.FILES)
+            if form.is_valid():
+                # Jangan di-save langsung ke database dulu (commit=False)
+                foto_baru = form.save(commit=False)
+                foto_baru.eskul = eskul # Tempelkan foto ini ke eskul milik pelatih
+                foto_baru.save() # Baru simpan
+                messages.success(request, 'Foto kegiatan berhasil ditambahkan ke galeri!')
+            else:
+                messages.error(request, 'Gagal mengunggah foto. Pastikan formatnya gambar yang valid.')
+        except Ekstrakurikuler.DoesNotExist:
+            messages.error(request, 'Akses ditolak.')
+            
+    return redirect('edit_profil_eskul')
+
+@login_required
+def hapus_foto_galeri(request, foto_id):
+    foto = get_object_or_404(FotoEskul, id=foto_id)
+    
+    # KEAMANAN: Pastikan pelatih HANYA BISA menghapus foto eskulnya sendiri!
+    if foto.eskul.pelatih == request.user:
+        foto.delete() # Saat ini dipanggil, Signal di models.py akan otomatis menghapus file di media/
+        messages.success(request, 'Foto berhasil dihapus dari galeri.')
+    else:
+        messages.error(request, 'Anda tidak berhak menghapus foto ini.')
+    
+    return redirect('edit_profil_eskul')
