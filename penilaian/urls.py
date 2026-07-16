@@ -25,4 +25,8 @@ urlpatterns = [
     path('pengaturan-eskul/', views.edit_profil_eskul, name='edit_profil_eskul'),
     path('pengaturan-eskul/galeri/tambah/', views.tambah_foto_galeri, name='tambah_foto_galeri'),
     path('pengaturan-eskul/galeri/hapus/<int:foto_id>/', views.hapus_foto_galeri, name='hapus_foto_galeri'),
+
+    # --- RUTE BARU: Edit Biodata & Keluarkan Siswa ---
+    path('edit-biodata/<int:siswa_id>/', views.edit_biodata_siswa, name='edit_biodata_siswa'),
+    path('keluarkan-siswa/<int:pendaftaran_id>/', views.keluarkan_siswa, name='keluarkan_siswa'),
 ]

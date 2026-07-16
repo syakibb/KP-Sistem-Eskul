@@ -113,9 +113,9 @@
                         <div class="pt-2 border-t border-gray-100">
                             <label class="text-xs text-gray-500 uppercase font-bold tracking-wider block mb-1">Kontak Siswa (WA)</label>
                             <div class="flex items-center justify-between bg-green-50 p-3 rounded-lg border border-green-100">
-                                <span class="font-mono text-green-800 font-bold">{{ siswa.nomor_wa_temp }}</span>
-                                {% if siswa.nomor_wa_temp != "-" %}
-                                    <a href="https://wa.me/{{ siswa.nomor_wa_temp|cut:'0'|add:'62' }}" target="_blank" class="text-white bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center shadow-sm">
+                                <span class="font-mono text-green-800 font-bold">{{ siswa.nomor_wa|default:"-" }}</span>
+                                {% if siswa.nomor_wa %}
+                                    <a href="https://wa.me/{{ siswa.wa_link }}" target="_blank" class="text-white bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center shadow-sm">
                                         Chat WA
                                     </a>
                                 {% endif %}
@@ -125,11 +125,11 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-gray-100">
                             <div>
                                 <label class="text-xs text-gray-500 uppercase font-bold tracking-wider">No. HP Orang Tua</label>
-                                <p class="font-medium text-gray-800 mt-1">{{ siswa.no_hp_ortu_temp|default:"-" }}</p>
+                                <p class="font-medium text-gray-800 mt-1">{{ siswa.no_hp_ortu|default:"-" }}</p>
                             </div>
                             <div>
                                 <label class="text-xs text-gray-500 uppercase font-bold tracking-wider">Alamat Domisili</label>
-                                <p class="font-medium text-gray-800 mt-1 text-sm leading-snug">{{ siswa.alamat_temp|default:"-" }}</p>
+                                <p class="font-medium text-gray-800 mt-1 text-sm leading-snug">{{ siswa.alamat|default:"-" }}</p>
                             </div>
                         </div>
                     </div>

@@ -24,7 +24,7 @@
                         
                         {% for sem in semua_semester_list %}
                             <option value="{{ sem.id }}" {% if sem == semester_terpilih %}selected{% endif %}>
-                                {{ sem.nama_semester }}
+                                {{ sem }}
                             </option>
                         {% endfor %}
                     </select>
@@ -51,7 +51,7 @@
     
     <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-            <h4 class="mb-0">Daftar Nilai Eskul Siswa (Semester: {{ semester_terpilih.nama_semester|default:"Semua Semester" }})</h4>
+            <h4 class="mb-0">Daftar Nilai Eskul Siswa (Semester: {{ semester_terpilih|default:"Semua Semester" }})</h4>
         </div>
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
@@ -126,10 +126,10 @@
                             <div class="flex items-center justify-between bg-green-50 p-3 rounded-lg border border-green-100 mb-2">
                                 <div>
                                     <span class="text-xs text-green-600 font-bold block">WhatsApp Siswa</span>
-                                    <span class="font-mono text-gray-800">{{ nilai.siswa.nomor_wa_temp }}</span>
+                                    <span class="font-mono text-gray-800">{{ nilai.siswa.nomor_wa|default:"-" }}</span>
                                 </div>
-                                {% if nilai.siswa.nomor_wa_temp != "-" %}
-                                    <a href="https://wa.me/{{ nilai.siswa.nomor_wa_temp|cut:'0'|add:'62' }}" target="_blank" class="text-white bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center shadow-sm">
+                                {% if nilai.siswa.nomor_wa %}
+                                    <a href="https://wa.me/{{ nilai.siswa.wa_link }}" target="_blank" class="text-white bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center shadow-sm">
                                         Chat
                                     </a>
                                 {% endif %}
@@ -138,13 +138,13 @@
                             <div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-200 mb-2">
                                 <div>
                                     <span class="text-xs text-gray-500 font-bold block">No. HP Orang Tua</span>
-                                    <span class="font-mono text-gray-800">{{ nilai.siswa.no_hp_ortu_temp|default:"-" }}</span>
+                                    <span class="font-mono text-gray-800">{{ nilai.siswa.no_hp_ortu|default:"-" }}</span>
                                 </div>
                             </div>
 
                             <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
                                 <span class="text-xs text-gray-500 font-bold block mb-1">Alamat Domisili</span>
-                                <p class="text-sm text-gray-700 leading-relaxed">{{ nilai.siswa.alamat_temp|default:"-" }}</p>
+                                <p class="text-sm text-gray-700 leading-relaxed">{{ nilai.siswa.alamat|default:"-" }}</p>
                             </div>
                         </div>
 

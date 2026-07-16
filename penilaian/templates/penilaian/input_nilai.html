@@ -53,8 +53,8 @@
                             <label for="keaktifan" class="block text-sm font-bold text-gray-700 mb-1">Predikat Keaktifan <span class="text-red-500">*</span></label>
                             <select id="keaktifan" name="keaktifan" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-accent focus:ring focus:ring-accent/20 transition bg-white cursor-pointer" required>
                                 <option value="A" {% if nilai.nilai_keaktifan == 'A' %}selected{% endif %}>A - Sangat Baik</option>
-                                <option value="B" {% if nilai.nilai_keaktifan == 'B' %}selected{% endif %}>B - Baik</option>
-                                <option value="C" {% if nilai.nilai_keaktifan == 'C' or not nilai %}selected{% endif %}>C - Cukup</option>
+                                <option value="B" {% if nilai.nilai_keaktifan == 'B' or not nilai %}selected{% endif %}>B - Baik</option>
+                                <option value="C" {% if nilai.nilai_keaktifan == 'C' %}selected{% endif %}>C - Cukup</option>
                                 <option value="D" {% if nilai.nilai_keaktifan == 'D' %}selected{% endif %}>D - Kurang</option>
                             </select>
                         </div>

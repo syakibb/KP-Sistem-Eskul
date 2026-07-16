@@ -29,7 +29,7 @@
                         <select name="semester_filter" onchange="this.form.submit()" class="w-full pl-4 pr-10 py-2.5 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block">
                             <option value="">Semua Semester</option>
                             {% for sem in semua_semester_list %}
-                                <option value="{{ sem.id }}" {% if sem.id|stringformat:"s" == selected_semester_id_str %}selected{% endif %}>{{ sem.nama_semester }}</option>
+                                <option value="{{ sem.id }}" {% if sem.id|stringformat:"s" == selected_semester_id_str %}selected{% endif %}>{{ sem }}</option>
                             {% endfor %}
                         </select>
                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
@@ -95,7 +95,7 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">{{ nilai.siswa.kelas.nama_kelas }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ nilai.siswa.nama_siswa }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700"><span class="bg-green-100 text-green-800 px-2 py-1 rounded-md text-xs font-bold">{{ nilai.eskul.nama_eskul }}</span></td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ nilai.semester.nama_semester }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ nilai.semester }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-center font-medium">{{ nilai.nilai_kehadiran }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-center">
                              <span class="px-2 py-1 rounded-full text-xs font-bold 

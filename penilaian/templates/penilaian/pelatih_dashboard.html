@@ -39,7 +39,7 @@
                 Daftar Anggota Ekskul
             </h3>
             <span class="text-xs font-bold text-primary bg-white px-3 py-1 rounded-full border border-gray-200 shadow-sm">
-                Semester: {{ semester_ini.nama_semester }}
+                Semester: {{ semester_ini.nama_semester }} - {{ semester_ini.tahun_ajaran }}
             </span>
         </div>
         
@@ -74,21 +74,32 @@
                                 </span>
                             {% endif %}
                         </td>
-                        <td class="px-6 py-5 text-right space-x-2">
-                            <button type="button" onclick="document.getElementById('detailSiswa{{ siswa.id }}').classList.remove('hidden')" class="inline-flex items-center px-3 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition text-sm font-bold">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                                Detail
-                            </button>
+                        <td class="px-6 py-5 text-right">
+                            <div class="flex justify-end items-center gap-2 flex-wrap">
+                                <!-- Tombol Detail -->
+                                <button type="button" onclick="document.getElementById('detailSiswa{{ siswa.id }}').classList.remove('hidden')" class="inline-flex items-center px-3 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition text-sm font-bold">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                    Detail
+                                </button>
 
-                            {% if siswa.id in siswa_sudah_dinilai %}
-                                <a href="{% url 'input_nilai_edit' siswa_id=siswa.id %}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-bold rounded-lg hover:bg-gray-50 hover:text-primary transition shadow-sm">
-                                    Edit
+                                <!-- Tombol Input/Edit Nilai -->
+                                {% if siswa.id in siswa_sudah_dinilai %}
+                                    <a href="{% url 'input_nilai_edit' siswa_id=siswa.id %}" class="inline-flex items-center px-3 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-bold rounded-lg hover:bg-gray-50 hover:text-primary transition shadow-sm">
+                                        Edit Nilai
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'input_nilai_edit' siswa_id=siswa.id %}" class="inline-flex items-center px-3 py-2 bg-accent hover:bg-accent_hover text-white text-sm font-bold rounded-lg transition shadow-md transform hover:-translate-y-0.5">
+                                        Input Nilai
+                                    </a>
+                                {% endif %}
+
+                                <!-- Tombol Keluarkan -->
+                                {% if siswa.pendaftaran_id %}
+                                <a href="{% url 'keluarkan_siswa' siswa.pendaftaran_id %}" onclick="return confirm('PERINGATAN!\n\nApakah Anda yakin ingin MENGELUARKAN {{ siswa.nama_siswa }} dari ekstrakurikuler ini?\n\nAksi ini akan mengubah statusnya menjadi KELUAR dan menghilangkan namanya dari daftar aktif Anda.');" class="inline-flex items-center px-3 py-2 bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 rounded-lg transition text-sm font-bold shadow-sm">
+                                    Keluarkan
                                 </a>
-                            {% else %}
-                                <a href="{% url 'input_nilai_edit' siswa_id=siswa.id %}" class="inline-flex items-center px-4 py-2 bg-accent hover:bg-accent_hover text-white text-sm font-bold rounded-lg transition shadow-md transform hover:-translate-y-0.5">
-                                    Input
-                                </a>
-                            {% endif %}
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                     {% empty %}
@@ -125,9 +136,9 @@
                         <div class="pt-2 border-t border-gray-100">
                             <label class="text-xs text-gray-500 uppercase font-bold tracking-wider block mb-1">Kontak Siswa (WA)</label>
                             <div class="flex items-center justify-between bg-green-50 p-3 rounded-lg border border-green-100">
-                                <span class="font-mono text-green-800 font-bold">{{ siswa.nomor_wa_temp }}</span>
-                                {% if siswa.nomor_wa_temp != "-" %}
-                                    <a href="https://wa.me/{{ siswa.nomor_wa_temp|cut:'0'|add:'62' }}" target="_blank" class="text-white bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center shadow-sm">
+                                <span class="font-mono text-green-800 font-bold">{{ siswa.nomor_wa|default:"-" }}</span>
+                                {% if siswa.nomor_wa %}
+                                    <a href="https://wa.me/{{ siswa.wa_link }}" target="_blank" class="text-white bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center shadow-sm">
                                         Chat WA
                                     </a>
                                 {% endif %}
@@ -137,14 +148,24 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-gray-100">
                             <div>
                                 <label class="text-xs text-gray-500 uppercase font-bold tracking-wider">No. HP Orang Tua</label>
-                                <p class="font-medium text-gray-800 mt-1">{{ siswa.no_hp_ortu_temp|default:"-" }}</p>
+                                <p class="font-medium text-gray-800 mt-1">{{ siswa.no_hp_ortu|default:"-" }}</p>
                             </div>
                             <div>
                                 <label class="text-xs text-gray-500 uppercase font-bold tracking-wider">Alamat Domisili</label>
-                                <p class="font-medium text-gray-800 mt-1 text-sm leading-snug">{{ siswa.alamat_temp|default:"-" }}</p>
+                                <p class="font-medium text-gray-800 mt-1 text-sm leading-snug">{{ siswa.alamat|default:"-" }}</p>
                             </div>
                         </div>
                     </div>
+                </div>
+                <!-- Action bar Modal -->
+                <div class="bg-gray-50 px-6 py-4 flex justify-between items-center border-t border-gray-200">
+                    <a href="{% url 'edit_biodata_siswa' siswa.id %}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition text-sm font-bold shadow-sm">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        Edit Biodata
+                    </a>
+                    <button type="button" class="inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-bold text-gray-700 hover:bg-gray-100 focus:outline-none transition" onclick="document.getElementById('detailSiswa{{ siswa.id }}').classList.add('hidden')">
+                        Tutup
+                    </button>
                 </div>
             </div>
         </div>
