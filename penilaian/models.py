@@ -47,7 +47,7 @@ class Semester(models.Model):
         return self.nama_semester
 
 class Kelas(models.Model):
-    nama_kelas = models.CharField(max_length=100, unique=True, help_text="Contoh: X Kuliner 1")
+    nama_kelas = models.CharField(max_length=100, unique=True, help_text="Contoh: 10 Kuliner 1")
 
     def __str__(self):
         return self.nama_kelas

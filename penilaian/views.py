@@ -52,11 +52,18 @@ def eskul_list_view(request):
     nis_dicari = request.GET.get('cari_nis')
     hasil_cari = []     
     search_performed = False
+    
+    # 1. Ambil tahun ajaran yang sedang aktif
+    tahun_aktif = TahunAjaran.objects.filter(is_active=True).first()
 
     if nis_dicari:
         search_performed = True
-        # REVISI: Siswa yang KELUAR atau NONAKTIF akan di-exclude sehingga dianggap Tidak Ditemukan
-        pendaftar_web = Pendaftaran.objects.filter(nis=nis_dicari).exclude(status__in=['KELUAR', 'NONAKTIF']).select_related('eskul_tujuan')
+        # 2. REVISI: Tambahkan filter tahun_ajaran=tahun_aktif
+        pendaftar_web = Pendaftaran.objects.filter(
+            nis=nis_dicari, 
+            tahun_ajaran=tahun_aktif
+        ).exclude(status__in=['KELUAR', 'NONAKTIF']).select_related('eskul_tujuan')
+        
         for p in pendaftar_web:
             hasil_cari.append({
                 'nama_siswa': p.nama_siswa,
